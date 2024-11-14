@@ -18,4 +18,17 @@ const signUpValidator = (body) => {
   }
 };
 
-module.exports = { signUpValidator };
+const signInValidator = (body) => {
+  const { email, password } = body;
+  if (email === undefined || email === "") {
+    return errorHandler("Email is required", 400);
+  } else if (password === undefined || password === "") {
+    return errorHandler("Password is required", 400);
+  } else if (isValidEmail(email) === false) {
+    return errorHandler("Email is invalid", 400);
+  } else {
+    return true;
+  }
+};
+
+module.exports = { signUpValidator, signInValidator };
