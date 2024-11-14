@@ -1,0 +1,11 @@
+{
+  "name": "bus-ticket-booking-backend",
+  "version": "1.0.0",
+  "description": "Bus Ticket Booking System Backend",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mahel Chandupa",
+  "license": "ISC"
+}
