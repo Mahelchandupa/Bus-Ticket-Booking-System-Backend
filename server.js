@@ -1,6 +1,7 @@
 const http = require("http");
 const connectDB = require("./config.js");
 const dotenv = require("dotenv");
+const authRoutes = require("./routes/auth.route.js");
 
 dotenv.config();
 
@@ -19,6 +20,11 @@ const server = http.createServer(async (req, res) => {
         "GET, POST, PUT, DELETE, PATCH"
       );
       return res.end(200, JSON.stringify({ message: "OK" }));
+    }
+
+    if ((await authRoutes(req, res)) === false) {
+        res.statusCode = 404;
+        res.end(JSON.stringify({ message: "Route not found" }));
     }
 });
 
