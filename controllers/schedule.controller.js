@@ -3,11 +3,20 @@ const { responseHandler } = require("../utils/responseHandler");
 const Schedule = require("../models/schedule.model");
 const Bus = require("../models/bus.model");
 const { parseBody } = require("../utils/parseBody");
+const { createBusRouteScheduleValidator } = require("../validators/schedule.validator");
 
 // Assign Buses to a Specific Date with Schedule Details
 const createBusRouteSchedule = async (req, res) => {
   try {
     let body = await parseBody(req);
+
+    // Validate input
+    const validationResult = createBusRouteScheduleValidator(body);
+
+    if (validationResult !== true) {
+      res.statusCode = 400;
+      return res.end(validationResult);
+    }
 
     const {
       busId,
@@ -52,7 +61,9 @@ const createBusRouteSchedule = async (req, res) => {
     await newSchedule.save();
 
     res.statusCode = 201;
-    res.end(responseHandler("Successfully bus schedule created", 201, newSchedule));
+    res.end(
+      responseHandler("Successfully bus schedule created", 201, newSchedule)
+    );
   } catch (error) {
     res.statusCode = 500;
     res.end(errorHandler(error, 500));
