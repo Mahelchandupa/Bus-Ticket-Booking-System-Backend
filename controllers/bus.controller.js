@@ -3,6 +3,7 @@ const { responseHandler } = require("../utils/responseHandler");
 const { parseBody } = require("../utils/parseBody");
 const Bus = require("../models/bus.model");
 const { registerBusValidator } = require("../validators/bus.validator");
+const { generateSeatLayout } = require("../utils/generateSeatLayout");
 
 const registerBus = async (req, res) => {
   try {
@@ -27,7 +28,11 @@ const registerBus = async (req, res) => {
       busOwnerNIC,
       totalSeats,
       routeId,
+      seatPosition,
     } = body;
+
+    // generate seat layout based on seat position
+    const seatLayout = generateSeatLayout(seatPosition);
 
     const newBus = new Bus({
       busId,
@@ -40,6 +45,8 @@ const registerBus = async (req, res) => {
       busOwnerNIC,
       totalSeats,
       routeId,
+      seatPosition,
+      seatLayout,
     });
 
     await newBus.save();

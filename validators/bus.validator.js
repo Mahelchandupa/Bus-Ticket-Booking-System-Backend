@@ -12,7 +12,10 @@ const registerBusValidator = (body) => {
     busOwnerNIC,
     totalSeats,
     routeId,
+    seatPosition,
   } = body;
+
+  const { leftPosition, rightPosition, backPosition } = seatPosition;
 
   if (busId === undefined || busId === "") {
     return errorHandler("Bus ID is required", 400);
@@ -34,6 +37,13 @@ const registerBusValidator = (body) => {
     return errorHandler("Total Seats is required", 400);
   } else if (routeId === undefined || routeId === "") {
     return errorHandler("Route ID is required", 400);
+  } else if (
+    totalSeats !==
+    leftPosition.numberOfRows * leftPosition.numberOfSeatsPerRow +
+      rightPosition.numberOfRows * rightPosition.numberOfSeatsPerRow +
+      backPosition.numberOfRows * backPosition.numberOfSeatsPerRow
+  ) {
+    return errorHandler("Total Seats mismatch with seat position", 400);
   } else {
     return true;
   }
