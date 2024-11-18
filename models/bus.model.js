@@ -40,7 +40,27 @@ const BusSchema = new Schema(
       type: Number,
       required: true,
     },
-    routeId: { type: Schema.Types.ObjectId, ref: "Route" }, // Reference to Route
+    seatPosition: {
+      leftPosition: {
+        numberOfSeatsPerRow: Number,
+        numberOfRows: Number,
+      },
+      rightPosition: {
+        numberOfSeatsPerRow: Number,
+        numberOfRows: Number,
+      },
+      backPosition: {
+        numberOfSeatsPerRow: Number,
+        numberOfRows: Number,
+      },
+    },
+    seatLayout: [
+      {
+        seatNumber: String,
+        isBooked: { type: Boolean, default: false },
+      },
+    ],
+    routeId: { type: Schema.Types.ObjectId, ref: "Route" }, 
   },
   {
     timestamps: true,
