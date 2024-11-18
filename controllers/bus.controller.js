@@ -2,10 +2,19 @@ const { errorHandler } = require("../error/error");
 const { responseHandler } = require("../utils/responseHandler");
 const { parseBody } = require("../utils/parseBody");
 const Bus = require("../models/bus.model");
+const { registerBusValidator } = require("../validators/bus.validator");
 
 const registerBus = async (req, res) => {
   try {
     let body = await parseBody(req);
+
+    // Validate input
+    const validationResult = registerBusValidator(body);
+
+    if (validationResult !== true) {
+      res.statusCode = 400;
+      return res.end(validationResult);
+    }
 
     const {
       busId,
