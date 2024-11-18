@@ -2,11 +2,22 @@ const { errorHandler } = require("../error/error");
 const { responseHandler } = require("../utils/responseHandler");
 const Route = require("../models/roadRoute.model");
 const { parseBody } = require("../utils/parseBody");
+const {
+  createRoadRouteValidator,
+} = require("../validators/roadRoute.validator");
 
-// Create a Bus Route
+// Create a Bus Road Route
 const createBusRoute = async (req, res) => {
   try {
     let body = await parseBody(req);
+
+    // Validate input
+    const validationResult = createRoadRouteValidator(body);
+
+    if (validationResult !== true) {
+      res.statusCode = 400;
+      return res.end(validationResult);
+    }
 
     const { routeId, routeName, distanceKm, estimatedTime } = body;
 
