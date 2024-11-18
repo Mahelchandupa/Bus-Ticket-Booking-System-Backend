@@ -51,7 +51,7 @@ const registerBus = async (req, res) => {
 
     await newBus.save();
     res.statusCode = 201;
-    res.end(responseHandler("Bus registered successfully", 201));
+    res.end(responseHandler("Bus registered successfully", 201, newBus));
   } catch (error) {
     res.statusCode = 500;
     res.end(errorHandler("Internal Server Error", 500));
