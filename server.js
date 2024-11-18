@@ -3,6 +3,7 @@ const connectDB = require("./config.js");
 const dotenv = require("dotenv");
 const authRoutes = require("./routes/auth.route.js");
 const roadRoutes = require("./routes/roadRoute.route.js");
+const busRoutes = require("./routes/bus.route.js");
 
 dotenv.config();
 
@@ -25,8 +26,10 @@ const server = http.createServer(async (req, res) => {
 
   if ((await authRoutes(req, res)) === false) {
     if ((await roadRoutes(req, res)) === false) {
-      res.statusCode = 404;
-      res.end(JSON.stringify({ message: "Route not found" }));
+      if ((await busRoutes(req, res)) === false) {
+        res.statusCode = 404;
+        res.end(JSON.stringify({ message: "Route not found" }));
+      }
     }
   }
 });
