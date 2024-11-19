@@ -37,4 +37,40 @@ const createBusRoute = async (req, res) => {
   }
 };
 
-module.exports = { createBusRoute };
+// Get All Bus Road Routes
+const getAllBusRoutes = async (req, res) => {
+  try {
+    const busRoutes = await Route.find();
+    res.statusCode = 200;
+    res.end(responseHandler("Fetch All Routes", 200, busRoutes));
+  } catch (error) {
+    res.statusCode = 500;
+    res.end(errorHandler("Internal Server Error", 500));
+  }
+};
+
+// Get Bus Road Route by ID
+const getBusRouteById = async (req, res) => {
+  try {
+    const { routeId } = req;
+
+    const busRoute = await Route.findOne({
+      _id: routeId,
+    });
+
+    if (!busRoute) {
+      res.statusCode = 404;
+      return res.end(errorHandler("Bus route not found", 404));
+    } else {
+      res.statusCode = 200;
+      res.end(
+        responseHandler("Fetch route details", 200, busRoute)
+      );
+    }
+  } catch (error) {
+    res.statusCode = 500;
+    res.end(errorHandler("Internal Server Error", 500));
+  }
+};
+
+module.exports = { createBusRoute, getAllBusRoutes, getBusRouteById };
