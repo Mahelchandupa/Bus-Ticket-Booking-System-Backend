@@ -19,8 +19,6 @@ const registerBusValidator = (body) => {
 
   if (busId === undefined || busId === "") {
     return errorHandler("Bus ID is required", 400);
-  } else if (busName === undefined || busName === "") {
-    return errorHandler("Bus Name is required", 400);
   } else if (busType === undefined || busType === "") {
     return errorHandler("Bus Type is required", 400);
   } else if (busOwner === undefined || busOwner === "") {
