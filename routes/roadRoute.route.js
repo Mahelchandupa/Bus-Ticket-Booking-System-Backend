@@ -16,9 +16,10 @@ const roadRoutes = async (req, res) => {
   const path = parsedUrl.pathname;
   const query = querystring.parse(parsedUrl.query);
 
+  req.query = query;
+
   // (/api/v1/routes/:id)
   const getBusRoadRouteByIdRegex = /^\/api\/v1\/routes\/(\w+)/;
-  console.log("path", path);
   const matchGetBusRoadRouteById = path.match(getBusRoadRouteByIdRegex);
 
   if (path === "/api/v1/routes" && req.method === "POST") {

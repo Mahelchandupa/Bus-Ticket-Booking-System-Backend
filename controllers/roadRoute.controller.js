@@ -40,9 +40,23 @@ const createBusRoute = async (req, res) => {
 // Get All Bus Road Routes
 const getAllBusRoutes = async (req, res) => {
   try {
-    const busRoutes = await Route.find();
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const busRoutes = await Route.find().skip(skip).limit(limit);
+
+    const totalBusRoutes = await Route.countDocuments();
+
     res.statusCode = 200;
-    res.end(responseHandler("Fetch All Routes", 200, busRoutes));
+    res.end(
+      responseHandler("Fetch All Routes", 200, {
+        totalBusRoutes,
+        totalPages: Math.ceil(totalBusRoutes / limit),
+        currentPage: page,
+        busRoutes,
+      })
+    );
   } catch (error) {
     res.statusCode = 500;
     res.end(errorHandler("Internal Server Error", 500));
@@ -63,9 +77,7 @@ const getBusRouteById = async (req, res) => {
       return res.end(errorHandler("Bus route not found", 404));
     } else {
       res.statusCode = 200;
-      res.end(
-        responseHandler("Fetch route details", 200, busRoute)
-      );
+      res.end(responseHandler("Fetch route details", 200, busRoute));
     }
   } catch (error) {
     res.statusCode = 500;

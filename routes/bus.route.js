@@ -14,6 +14,8 @@ const busRoutes = async (req, res) => {
   const path = parsedUrl.pathname;
   const query = querystring.parse(parsedUrl.query);
 
+  req.query = query;
+
   // (/api/v1/buses/:id)
   const getBusByIdRegex = /^\/api\/v1\/buses\/(\w+)/;
   const matchGetBusById = path.match(getBusByIdRegex);
