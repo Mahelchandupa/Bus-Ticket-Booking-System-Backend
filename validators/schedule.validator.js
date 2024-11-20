@@ -44,4 +44,18 @@ const createBusRouteScheduleValidator = (body) => {
   }
 };
 
-module.exports = { createBusRouteScheduleValidator };
+const filterScheduleByParamsValidator = (query) => {
+    const { from, to, date } = query;
+    
+    if (from === undefined || from === "") {
+        return errorHandler("From City is required", 400);
+    } else if (to === undefined || to === "") {
+        return errorHandler("To City is required", 400);
+    } else if (date === undefined || date === "") {
+        return errorHandler("Date is required", 400);
+    } else {
+        return true;
+    }
+}
+
+module.exports = { createBusRouteScheduleValidator, filterScheduleByParamsValidator };

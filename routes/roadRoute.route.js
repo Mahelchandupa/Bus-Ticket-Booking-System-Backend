@@ -9,6 +9,7 @@ const { parse } = require("url");
 const querystring = require("querystring");
 const {
   createBusRouteSchedule,
+  getScheduleByParams,
 } = require("../controllers/schedule.controller");
 
 const roadRoutes = async (req, res) => {
@@ -43,6 +44,11 @@ const roadRoutes = async (req, res) => {
     try {
       await verifyToken(req, res, ROLES.ADMIN);
       await createBusRouteSchedule(req, res);
+    } catch (error) {}
+  } else if (path === "/api/v1/routes/schedules/search" && req.method === "GET") {
+    try {
+      await verifyToken(req, res);
+      await getScheduleByParams(req, res);
     } catch (error) {}
   } else {
     return false;

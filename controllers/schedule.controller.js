@@ -3,7 +3,10 @@ const { responseHandler } = require("../utils/responseHandler");
 const Schedule = require("../models/schedule.model");
 const Bus = require("../models/bus.model");
 const { parseBody } = require("../utils/parseBody");
-const { createBusRouteScheduleValidator } = require("../validators/schedule.validator");
+const {
+  createBusRouteScheduleValidator,
+  filterScheduleByParamsValidator,
+} = require("../validators/schedule.validator");
 
 // Assign Buses to a Specific Date with Schedule Details
 const createBusRouteSchedule = async (req, res) => {
@@ -70,4 +73,41 @@ const createBusRouteSchedule = async (req, res) => {
   }
 };
 
-module.exports = { createBusRouteSchedule };
+// Get Schedule of Buses by Params - from, to, date
+const getScheduleByParams = async (req, res) => {
+  try {
+    console.log('called')
+    const { from, to, date } = req.query;
+
+    // Validate input
+    const validationResult = filterScheduleByParamsValidator({
+      from,
+      to,
+      date,
+    });
+
+    if (validationResult !== true) {
+      res.statusCode = 400;
+      return res.end(validationResult);
+    }
+
+    const schedule = await Schedule.find({
+      fromCity: from,
+      toCity: to,
+      date: date,
+    });
+
+    if (!schedule || schedule.length === 0) {
+      res.statusCode = 404;
+      res.end(errorHandler("Buses are not Schedule", 404));
+    } else {
+      res.statusCode = 200;
+      res.end(responseHandler("Schedules Buses", 200, schedule));
+    }
+  } catch (error) {
+    res.statusCode = 500;
+    res.end(errorHandler(error, 500));
+  }
+};
+
+module.exports = { createBusRouteSchedule, getScheduleByParams };
