@@ -76,7 +76,6 @@ const createBusRouteSchedule = async (req, res) => {
 // Get Schedule of Buses by Params - from, to, date
 const getScheduleByParams = async (req, res) => {
   try {
-    console.log('called')
     const { from, to, date } = req.query;
 
     // Validate input
@@ -110,4 +109,62 @@ const getScheduleByParams = async (req, res) => {
   }
 };
 
-module.exports = { createBusRouteSchedule, getScheduleByParams };
+// get Schedules By Route Id
+const getSchedulesByRouteId = async (req, res) => {
+  try {
+    const { routeId } = req;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const [schedules, totalSchedules] = await Promise.all([
+      Schedule.find({ routeId }).skip(skip).limit(limit),
+      Schedule.countDocuments({ routeId }),
+    ]);
+
+    if (!schedules || schedules.length === 0) {
+      res.statusCode = 404;
+      res.end(errorHandler("Buses are not Schedule", 404));
+    } else {
+      res.statusCode = 200;
+      res.end(
+        responseHandler("Schedules Buses", 200, {
+          totalSchedules,
+          totalPages: Math.ceil(totalSchedules / limit),
+          currentPage: page,
+          schedules,
+        })
+      );
+    }
+  } catch (error) {
+    res.statusCode = 500;
+    res.end(errorHandler(error, 500));
+  }
+};
+
+// Get Schedule by ID
+const getScheduleById = async (req, res) => {
+  try {
+    const { scheduleId } = req;
+
+    const schedule = await Schedule.findById(scheduleId);
+
+    if (!schedule) {
+      res.statusCode = 404;
+      res.end(errorHandler("Schedule not found", 404));
+    } else {
+      res.statusCode = 200;
+      res.end(responseHandler("Schedule Bus", 200, schedule));
+    }
+  } catch (error) {
+    res.statusCode = 500;
+    res.end(errorHandler(error, 500));
+  }
+};
+
+module.exports = {
+  createBusRouteSchedule,
+  getScheduleByParams,
+  getSchedulesByRouteId,
+  getScheduleById,
+};
