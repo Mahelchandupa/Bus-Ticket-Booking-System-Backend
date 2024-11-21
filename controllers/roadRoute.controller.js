@@ -5,6 +5,7 @@ const { parseBody } = require("../utils/parseBody");
 const {
   createRoadRouteValidator,
 } = require("../validators/roadRoute.validator");
+const City = require("../models/city.model");
 
 // Create a Bus Road Route
 const createBusRoute = async (req, res) => {
@@ -85,4 +86,17 @@ const getBusRouteById = async (req, res) => {
   }
 };
 
-module.exports = { createBusRoute, getAllBusRoutes, getBusRouteById };
+// Get All Cities
+const getAllCities = async (req, res) => {
+  try {
+    const cities = await City.find();
+
+    res.statusCode = 200;
+    res.end(responseHandler("Fetch All Cities", 200, cities));
+  } catch (error) {
+    res.statusCode = 500;
+    res.end(errorHandler(error, 500));
+  }
+};
+
+module.exports = { createBusRoute, getAllBusRoutes, getBusRouteById, getAllCities };

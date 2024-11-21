@@ -2,6 +2,7 @@ const {
   createBusRoute,
   getAllBusRoutes,
   getBusRouteById,
+  getAllCities,
 } = require("../controllers/roadRoute.controller");
 const { ROLES } = require("../helpers/roles");
 const { verifyToken } = require("../utils/verifyUser");
@@ -45,10 +46,18 @@ const roadRoutes = async (req, res) => {
       await verifyToken(req, res, ROLES.ADMIN);
       await createBusRouteSchedule(req, res);
     } catch (error) {}
-  } else if (path === "/api/v1/routes/schedules/search" && req.method === "GET") {
+  } else if (
+    path === "/api/v1/routes/schedules/search" &&
+    req.method === "GET"
+  ) {
     try {
       await verifyToken(req, res);
       await getScheduleByParams(req, res);
+    } catch (error) {}
+  } else if (path === "/api/v1/cities" && req.method === "GET") {
+    try {
+      await verifyToken(req, res);
+      await getAllCities(req, res);
     } catch (error) {}
   } else {
     return false;
