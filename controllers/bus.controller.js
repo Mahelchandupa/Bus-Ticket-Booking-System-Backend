@@ -5,6 +5,7 @@ const Bus = require("../models/bus.model");
 const { registerBusValidator } = require("../validators/bus.validator");
 const { generateSeatLayout } = require("../utils/generateSeatLayout");
 const mongoose = require("mongoose");
+const errorMessages = require("../error/errorMesssages");
 
 const registerBus = async (req, res) => {
   try {
@@ -54,8 +55,13 @@ const registerBus = async (req, res) => {
     res.statusCode = 201;
     res.end(responseHandler("Bus registered successfully", 201, newBus));
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -82,8 +88,13 @@ const getAllBuses = async (req, res) => {
       })
     );
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -92,24 +103,31 @@ const getBusesByRouteId = async (req, res) => {
   try {
     const { routeId } = req;
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10; 
+    const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
     const [buses, totalBuses] = await Promise.all([
-      Bus.find({ routeId }).skip(skip).limit(limit), 
-      Bus.countDocuments({ routeId }), 
+      Bus.find({ routeId }).skip(skip).limit(limit),
+      Bus.countDocuments({ routeId }),
     ]);
 
     res.statusCode = 200;
-    res.end(responseHandler("Fetch All Buses Based Route", 200, {
-      totalBuses,
-      totalPages: Math.ceil(totalBuses / limit),
-      currentPage: page,
-      buses
-    }));
+    res.end(
+      responseHandler("Fetch All Buses Based Route", 200, {
+        totalBuses,
+        totalPages: Math.ceil(totalBuses / limit),
+        currentPage: page,
+        buses,
+      })
+    );
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -129,15 +147,22 @@ const getBusById = async (req, res) => {
     });
 
     if (!bus) {
-      res.statusCode = 404;
-      res.end(errorHandler("Bus not found", 404));
+      res.statusCode = errorMessages.ROUTE_NOT_FOUND.statusCode;
+      res.end(
+        errorHandler(errorMessages.NOT_FOUND.statusCode, "Bus not found")
+      );
     } else {
       res.statusCode = 200;
       res.end(responseHandler("Fetch bus details", 200, bus));
     }
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 

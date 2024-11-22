@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { errorHandler } = require("../error/error");
+const errorMessages = require("../error/errorMesssages");
 
 const verifyToken = (req, res, role) => {
   return new Promise((resolve, reject) => {
@@ -7,29 +8,42 @@ const verifyToken = (req, res, role) => {
     const token = authHeader && authHeader.split(" ")[1];
 
     if (!token) {
-      res.statusCode = 401;
-      res.end(errorHandler(401, "Unauthorized"));
+      res.statusCode = errorMessages.UNAUTHORIZED.statusCode;
+      res.end(
+        errorHandler(errorMessages.UNAUTHORIZED.statusCode, "Unauthorized")
+      );
       return reject(new Error("No token provided"));
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) {
-        console.error("JWT Verification Error:", err.message); // Log the exact error message for debugging
         if (err.name === "TokenExpiredError") {
-          res.statusCode = 401;
-          res.end(errorHandler(401, "Token expired"));
+          res.statusCode = errorMessages.UNAUTHORIZED.statusCode;
+          res.end(
+            errorHandler(errorMessages.UNAUTHORIZED.statusCode, "Token expired")
+          );
           return reject(new Error("Token expired"));
         } else {
-          res.statusCode = 403;
-          res.end(errorHandler(403, "Forbidden: Token verification failed"));
+          res.statusCode = errorMessages.FORBIDDEN.statusCode;
+          res.end(
+            errorHandler(
+              errorMessages.FORBIDDEN.statusCode,
+              "Forbidden: Token verification failed"
+            )
+          );
           return reject(new Error("Token verification failed"));
         }
       }
-      
+
       // Role-based authorization
       if (role && user.role !== role) {
-        res.statusCode = 403;
-        res.end(errorHandler(403, "Forbidden: Insufficient Role"));
+        res.statusCode = errorMessages.FORBIDDEN.statusCode;
+        res.end(
+          errorHandler(
+            errorMessages.FORBIDDEN.statusCode,
+            "Forbidden: Insufficient Role"
+          )
+        );
         return reject();
       }
 

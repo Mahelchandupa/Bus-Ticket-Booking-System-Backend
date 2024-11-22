@@ -33,8 +33,13 @@ const createBusRoute = async (req, res) => {
     res.statusCode = 201;
     res.end(responseHandler("Bus route created successfully", 201));
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -59,8 +64,13 @@ const getAllBusRoutes = async (req, res) => {
       })
     );
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -75,14 +85,24 @@ const getBusRouteById = async (req, res) => {
 
     if (!busRoute) {
       res.statusCode = 404;
-      return res.end(errorHandler("Bus route not found", 404));
+      return res.end(
+        errorHandler(
+          errorMessages.ROUTE_NOT_FOUND.statusCode,
+          errorMessages.ROUTE_NOT_FOUND.message
+        )
+      );
     } else {
       res.statusCode = 200;
       res.end(responseHandler("Fetch route details", 200, busRoute));
     }
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -94,9 +114,19 @@ const getAllCities = async (req, res) => {
     res.statusCode = 200;
     res.end(responseHandler("Fetch All Cities", 200, cities));
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler(error, 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
-module.exports = { createBusRoute, getAllBusRoutes, getBusRouteById, getAllCities };
+module.exports = {
+  createBusRoute,
+  getAllBusRoutes,
+  getBusRouteById,
+  getAllCities,
+};
