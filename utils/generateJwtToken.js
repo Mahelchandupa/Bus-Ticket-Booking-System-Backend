@@ -6,7 +6,7 @@ const generateJwtToken = (user) => {
     { _id: user._id, role: user.role, email: user.email },
     secret,
     {
-      expiresIn: "30m",
+      expiresIn: "8h",
     }
   );
 };

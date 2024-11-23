@@ -76,6 +76,11 @@ const BusScheduleSchema = new Schema({
       seatNumber: String,
       isBooked: { type: Boolean, default: false },
       bookedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+      seatAvailableState: {
+        type: String,
+        enum: ["Available", "Processing", "Booked"],
+        default: "Available",
+      },
     },
   ],
 });

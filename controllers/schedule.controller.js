@@ -225,10 +225,88 @@ const getAllSchedules = async (req, res) => {
   }
 };
 
+const bookSeat = async (req, res, io) => {
+  const { scheduleId, seatNumber, userId } = req.body;
+
+  try {
+    // Step 1: Find and lock the seat
+    const schedule = await Schedule.findOneAndUpdate(
+      {
+        _id: scheduleId,
+        "seatStatus.seatNumber": seatNumber,
+        "seatStatus.seatAvailableState": "Available",
+      },
+      {
+        $set: { "seatStatus.$.seatAvailableState": "Processing" },
+      },
+      { new: true }
+    );
+
+    if (!schedule) {
+      return res
+        .status(400)
+        .json({ message: "Seat is already booked or being processed." });
+    }
+
+    // Emit real-time update to all clients
+    io.emit("seatStatusUpdate", {
+      scheduleId,
+      seatNumber,
+      state: "Processing",
+    });
+
+    // Step 2: Simulate booking processing
+    setTimeout(async () => {
+      const bookedSchedule = await Schedule.findOneAndUpdate(
+        {
+          _id: scheduleId,
+          "seatStatus.seatNumber": seatNumber,
+          "seatStatus.seatAvailableState": "Processing",
+        },
+        {
+          $set: {
+            "seatStatus.$.seatAvailableState": "Booked",
+            "seatStatus.$.isBooked": true,
+            "seatStatus.$.bookedBy": userId,
+          },
+        },
+        { new: true }
+      );
+
+      if (bookedSchedule) {
+        io.emit("seatStatusUpdate", {
+          scheduleId,
+          seatNumber,
+          state: "Booked",
+        });
+        res.status(200).json({ message: "Seat booked successfully." });
+      } else {
+        // Handle rollback if the seat wasn't properly processed
+        await Schedule.updateOne(
+          {
+            _id: scheduleId,
+            "seatStatus.seatNumber": seatNumber,
+          },
+          { $set: { "seatStatus.$.seatAvailableState": "Available" } }
+        );
+        io.emit("seatStatusUpdate", {
+          scheduleId,
+          seatNumber,
+          state: "Available",
+        });
+        res.status(500).json({ message: "Seat booking failed. Try again." });
+      }
+    }, 5000); // Simulating delay for booking confirmation
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createBusRouteSchedule,
   getFilteredSchedules,
   getSchedulesByRouteId,
   getScheduleById,
   getAllSchedules,
+  bookSeat,
 };
