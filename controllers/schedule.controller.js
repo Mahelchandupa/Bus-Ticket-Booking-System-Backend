@@ -173,7 +173,7 @@ const getScheduleById = async (req, res) => {
   try {
     const { scheduleId } = req;
 
-    const schedule = await Schedule.findById(scheduleId);
+    const schedule = await Schedule.findById(scheduleId).populate("busId");
 
     if (!schedule) {
       res.statusCode = errorMessages.NOT_FOUND.statusCode;

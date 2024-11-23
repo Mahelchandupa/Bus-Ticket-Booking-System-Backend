@@ -9,6 +9,7 @@ const {
   getScheduleById,
   getAllSchedules,
 } = require("../controllers/schedule.controller");
+const { errorHandler } = require("../error/error");
 
 const scheduleRoutes = async (req, res) => {
   const parsedUrl = parse(req.url);
