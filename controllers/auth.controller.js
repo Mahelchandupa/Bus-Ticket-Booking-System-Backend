@@ -8,6 +8,7 @@ const {
 } = require("../validators/auth.validator");
 const ROLES = require("../helpers/roles");
 const generateJwtToken = require("../utils/generateJwtToken");
+const errorMessages = require("../error/errorMesssages");
 
 const signUp = async (req, res) => {
   try {
@@ -32,8 +33,13 @@ const signUp = async (req, res) => {
     res.statusCode = 201;
     res.end(JSON.stringify("Account created successfully"));
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -54,13 +60,20 @@ const signIn = async (req, res) => {
     let validUser = await User.findOne({ email });
 
     if (!validUser) {
-      res.statusCode = 404;
-      return res.end(errorHandler("User not found", 404));
+      res.statusCode = errorMessages.ROUTE_NOT_FOUND.statusCode;
+      return res.end(
+        errorHandler(errorMessages.ROUTE_NOT_FOUND.statusCode, "User not found")
+      );
     }
     const validPassword = bcryptjs.compareSync(password, validUser.password);
     if (!validPassword) {
-      res.statusCode = 401;
-      return res.end(errorHandler("Wrong credentials!", 401));
+      res.statusCode = errorMessages.UNAUTHORIZED.statusCode;
+      return res.end(
+        errorHandler(
+          errorMessages.UNAUTHORIZED.statusCode,
+          "Wrong credentials!"
+        )
+      );
     }
     // Generate token
     const token = generateJwtToken(validUser);
@@ -69,8 +82,13 @@ const signIn = async (req, res) => {
     // res.cookie("access_token", token, { httpOnly: true });
     res.end(JSON.stringify({ message: "Login successful", token, userInfo }));
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler("Internal Server Error", 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 

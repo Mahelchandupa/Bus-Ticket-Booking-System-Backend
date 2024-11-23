@@ -15,14 +15,15 @@ connectDB();
 
 const server = http.createServer(async (req, res) => {
   res.setHeader("Content-Type", "application/json");
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
   res.setHeader("Access-Control-Allow-Headers", "*");
   if (req.method === "OPTIONS") {
     res.setHeader(
       "Access-Control-Allow-Methods",
       "GET, POST, PUT, DELETE, PATCH"
     );
-    return res.end(200, JSON.stringify({ message: "OK" }));
+    res.writeHead(200); 
+    return res.end(JSON.stringify({ message: "OK" })); 
   }
 
   if ((await authRoutes(req, res)) === false) {

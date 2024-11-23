@@ -4,10 +4,12 @@ const { parse } = require("url");
 const querystring = require("querystring");
 const {
   createBusRouteSchedule,
-  getScheduleByParams,
+  getFilteredSchedules,
   getSchedulesByRouteId,
   getScheduleById,
+  getAllSchedules,
 } = require("../controllers/schedule.controller");
+const { errorHandler } = require("../error/error");
 
 const scheduleRoutes = async (req, res) => {
   const parsedUrl = parse(req.url);
@@ -29,13 +31,20 @@ const scheduleRoutes = async (req, res) => {
       await verifyToken(req, res, ROLES.ADMIN);
       await createBusRouteSchedule(req, res);
     } catch (error) {}
-  } else if (matchGetScheduleById && req.method === "GET") {
+  } else if (path === "/api/v1/schedules" && req.method === "GET") {
     try {
-      const scheduleId = matchGetScheduleById[1];
       await verifyToken(req, res);
-      req.scheduleId = scheduleId;
-      await getScheduleById(req, res);
-    } catch (error) {}
+
+      // Check for query parameters to determine filtering or fetching all
+      if (Object.keys(req.query).length > 0) {
+        await getFilteredSchedules(req, res); 
+      } else {
+        await getAllSchedules(req, res);
+      }
+    } catch (error) {
+      res.statusCode = 500;
+      res.end(errorHandler(error, 500));
+    }
   } else if (matchGetSchedulesByRouteId && req.method === "GET") {
     try {
       const routeId = matchGetSchedulesByRouteId[1];
@@ -43,10 +52,12 @@ const scheduleRoutes = async (req, res) => {
       req.routeId = routeId;
       await getSchedulesByRouteId(req, res);
     } catch (error) {}
-  } else if (path === "/api/v1/schedules/search" && req.method === "GET") {
+  } else if (matchGetScheduleById && req.method === "GET") {
     try {
+      const scheduleId = matchGetScheduleById[1];
       await verifyToken(req, res);
-      await getScheduleByParams(req, res);
+      req.scheduleId = scheduleId;
+      await getScheduleById(req, res);
     } catch (error) {}
   } else {
     return false;

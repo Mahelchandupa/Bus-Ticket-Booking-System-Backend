@@ -7,6 +7,7 @@ const {
   createBusRouteScheduleValidator,
   filterScheduleByParamsValidator,
 } = require("../validators/schedule.validator");
+const errorMessages = require("../error/errorMesssages");
 
 // Assign Buses to a Specific Date with Schedule Details
 const createBusRouteSchedule = async (req, res) => {
@@ -68,13 +69,18 @@ const createBusRouteSchedule = async (req, res) => {
       responseHandler("Successfully bus schedule created", 201, newSchedule)
     );
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler(error, 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
 // Get Schedule of Buses by Params - from, to, date
-const getScheduleByParams = async (req, res) => {
+const getFilteredSchedules = async (req, res) => {
   try {
     const { from, to, date } = req.query;
 
@@ -90,22 +96,32 @@ const getScheduleByParams = async (req, res) => {
       return res.end(validationResult);
     }
 
-    const schedule = await Schedule.find({
+    const filteredSchedules = await Schedule.find({
       fromCity: from,
       toCity: to,
       date: date,
-    });
+    }).populate("busId");
 
-    if (!schedule || schedule.length === 0) {
-      res.statusCode = 404;
-      res.end(errorHandler("Buses are not Schedule", 404));
+    if (filteredSchedules.length === 0) {
+      res.statusCode = errorMessages.NOT_FOUND.statusCode;
+      res.end(
+        errorHandler(
+          errorMessages.ROUTE_NOT_FOUND.statusCode,
+          "No schedules found"
+        )
+      );
     } else {
       res.statusCode = 200;
-      res.end(responseHandler("Schedules Buses", 200, schedule));
+      res.end(responseHandler("Filtered Schedules", 200, filteredSchedules));
     }
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler(error, 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -123,8 +139,13 @@ const getSchedulesByRouteId = async (req, res) => {
     ]);
 
     if (!schedules || schedules.length === 0) {
-      res.statusCode = 404;
-      res.end(errorHandler("Buses are not Schedule", 404));
+      res.statusCode = errorMessages.NOT_FOUND.statusCode;
+      res.end(
+        errorHandler(
+          errorMessages.NOT_FOUND.statusCode,
+          "Buses are not Schedule"
+        )
+      );
     } else {
       res.statusCode = 200;
       res.end(
@@ -137,8 +158,13 @@ const getSchedulesByRouteId = async (req, res) => {
       );
     }
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler(error, 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
@@ -147,24 +173,62 @@ const getScheduleById = async (req, res) => {
   try {
     const { scheduleId } = req;
 
-    const schedule = await Schedule.findById(scheduleId);
+    const schedule = await Schedule.findById(scheduleId).populate("busId");
 
     if (!schedule) {
-      res.statusCode = 404;
-      res.end(errorHandler("Schedule not found", 404));
+      res.statusCode = errorMessages.NOT_FOUND.statusCode;
+      res.end(
+        errorHandler(errorMessages.NOT_FOUND.statusCode, "Schedule not found")
+      );
     } else {
       res.statusCode = 200;
       res.end(responseHandler("Schedule Bus", 200, schedule));
     }
   } catch (error) {
-    res.statusCode = 500;
-    res.end(errorHandler(error, 500));
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
+  }
+};
+
+// Get All Schedules
+const getAllSchedules = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+
+    const schedules = await Schedule.find().skip(skip).limit(limit);
+    const totalSchedules = await Schedule.countDocuments();
+
+    res.statusCode = 200;
+    res.end(
+      responseHandler("All Schedules", 200, {
+        totalSchedules,
+        totalPages: Math.ceil(totalSchedules / limit),
+        currentPage: page,
+        schedules,
+      })
+    );
+  } catch (error) {
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 };
 
 module.exports = {
   createBusRouteSchedule,
-  getScheduleByParams,
+  getFilteredSchedules,
   getSchedulesByRouteId,
   getScheduleById,
+  getAllSchedules,
 };
