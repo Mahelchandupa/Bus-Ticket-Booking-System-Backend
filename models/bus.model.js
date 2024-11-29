@@ -16,15 +16,7 @@ const BusSchema = new Schema(
       type: String,
       required: true,
     },
-    busOwner: {
-      type: String,
-      required: true,
-    },
     busOwnerContact: {
-      type: String,
-      required: true,
-    },
-    busOwnerEmail: {
       type: String,
       required: true,
     },
@@ -60,7 +52,8 @@ const BusSchema = new Schema(
         isBooked: { type: Boolean, default: false },
       },
     ],
-    routeId: { type: Schema.Types.ObjectId, ref: "Route" }, 
+    routeId: { type: Schema.Types.ObjectId, ref: "Route" },
+    userId: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {
     timestamps: true,
