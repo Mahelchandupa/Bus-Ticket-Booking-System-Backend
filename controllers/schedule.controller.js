@@ -8,6 +8,9 @@ const {
   filterScheduleByParamsValidator,
 } = require("../validators/schedule.validator");
 const errorMessages = require("../error/errorMesssages");
+const Payment = require("../models/payment.model");
+const User = require("../models/user.model");
+const sendBookingDetails = require("../helpers/sendBookingDetails");
 
 // Assign Buses to a Specific Date with Schedule Details
 const createBusRouteSchedule = async (req, res) => {
@@ -225,10 +228,90 @@ const getAllSchedules = async (req, res) => {
   }
 };
 
+const doPayment = async (req, res) => {
+  try {
+    let body = await parseBody(req);
+    const { userId, scheduleId, seats, paymentMethod, amount } = body;
+    const schedule = await Schedule.findById(scheduleId).populate("busId").populate("routeId");
+    const unavailableSeats = seats.filter((seat) =>
+      schedule.seatStatus.find(
+        (seatStatus) =>
+          seatStatus.seatNumber === seat.seatNumber &&
+          seatStatus.seatAvailableState === "Booked"
+      )
+    );
+
+    if (unavailableSeats.length > 0) {
+      res.statusCode = 400;
+      return res.end(
+        errorHandler(400, "Some of the seats are already booked.")
+      );
+    }
+
+    const payment = new Payment({
+      userId,
+      scheduleId,
+      paymentMethod,
+      amount,
+      paymentStatus: "Completed",
+      transactionReference: `TRX-${Date.now()}`,
+    });
+
+    schedule.seatStatus.forEach((seat) => {
+      if (seats.find((s) => s.seatNumber === seat.seatNumber)) {
+        seat.isBooked = true;
+        seat.bookedBy = userId;
+        seat.seatAvailableState = "Booked";
+      }
+    });
+    
+    schedule.availableSeats -= seats.length;
+
+    const user = await User.findById(userId);
+    // before pushing the scheduleId to the user's booking array, check if the user already has the scheduleId
+    if (!user.bookings.includes(scheduleId)) {
+      user.bookings.push(scheduleId);
+    }
+
+    await schedule.save();
+    await payment.save();
+    await user.save();
+
+    // Send email to user about the booking details
+    await sendBookingDetails(
+      user.email,
+      schedule,
+      seats,
+      amount,
+      paymentMethod,
+      payment
+    );
+
+    res.statusCode = 201;
+    res.end(
+      responseHandler(
+        "Payment successful, check your email for details",
+        201,
+        payment
+      )
+    );
+  } catch (error) {
+    console.log('error', error);
+    res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
+    res.end(
+      errorHandler(
+        errorMessages.INTERNAL_SERVER_ERROR.statusCode,
+        errorMessages.INTERNAL_SERVER_ERROR
+      )
+    );
+  }
+};
+
 module.exports = {
   createBusRouteSchedule,
   getFilteredSchedules,
   getSchedulesByRouteId,
   getScheduleById,
   getAllSchedules,
+  doPayment,
 };

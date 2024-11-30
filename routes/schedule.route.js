@@ -8,6 +8,7 @@ const {
   getSchedulesByRouteId,
   getScheduleById,
   getAllSchedules,
+  doPayment,
 } = require("../controllers/schedule.controller");
 const { errorHandler } = require("../error/error");
 
@@ -37,7 +38,7 @@ const scheduleRoutes = async (req, res) => {
 
       // Check for query parameters to determine filtering or fetching all
       if (Object.keys(req.query).length > 0) {
-        await getFilteredSchedules(req, res); 
+        await getFilteredSchedules(req, res);
       } else {
         await getAllSchedules(req, res);
       }
@@ -58,6 +59,12 @@ const scheduleRoutes = async (req, res) => {
       await verifyToken(req, res);
       req.scheduleId = scheduleId;
       await getScheduleById(req, res);
+    } catch (error) {}
+  } else if (path === "/api/v1/schedules/pay" && req.method === "POST") {
+    try {
+      console.log("PAYMENT");
+      await verifyToken(req, res);
+      await doPayment(req, res);
     } catch (error) {}
   } else {
     return false;

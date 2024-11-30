@@ -6,6 +6,12 @@ const { registerBusValidator } = require("../validators/bus.validator");
 const { generateSeatLayout } = require("../utils/generateSeatLayout");
 const mongoose = require("mongoose");
 const errorMessages = require("../error/errorMesssages");
+const User = require("../models/user.model");
+const { ROLES } = require("../helpers/roles");
+const generator = require("generate-password");
+const passwordGenerator = require("../utils/passwordGenerator");
+const bcryptjs = require("bcryptjs");
+const sendLoginDetails = require("../helpers/auth/sendLoginDetails");
 
 const registerBus = async (req, res) => {
   try {
@@ -33,6 +39,21 @@ const registerBus = async (req, res) => {
       seatPosition,
     } = body;
 
+    // Generate password
+    const password = passwordGenerator();
+    const hashedPassword = await bcryptjs.hashSync(password, 10);
+
+    const newUser = new User({
+      username: busOwner,
+      email: busOwnerEmail,
+      role: ROLES.OPERATOR,
+      password: hashedPassword,
+      contactNumber: busOwnerContact,
+    });
+
+    const user = await newUser.save();
+    const { _id: userId } = user;
+
     // generate seat layout based on seat position
     const seatLayout = generateSeatLayout(seatPosition);
 
@@ -49,11 +70,22 @@ const registerBus = async (req, res) => {
       routeId,
       seatPosition,
       seatLayout,
+      userId,
     });
 
     await newBus.save();
+
+    // Send email with login details
+    await sendLoginDetails(busOwnerEmail, busOwner, password);
+
     res.statusCode = 201;
-    res.end(responseHandler("Bus registered successfully", 201, newBus));
+    res.end(
+      responseHandler(
+        "Bus registered successfully. Login details have been emailed to the bus owner.",
+        201,
+        newBus
+      )
+    );
   } catch (error) {
     res.statusCode = errorMessages.INTERNAL_SERVER_ERROR.statusCode;
     res.end(
