@@ -6,6 +6,7 @@ const roadRoutes = require("./routes/roadRoute.route.js");
 const busRoutes = require("./routes/bus.route.js");
 const scheduleRoutes = require("./routes/schedule.route.js");
 const socketIo = require("socket.io");
+const bookingRoutes = require("./routes/booking.route.js");
 
 dotenv.config();
 
@@ -37,8 +38,10 @@ const server = http.createServer(async (req, res) => {
     if ((await roadRoutes(req, res)) === false) {
       if ((await busRoutes(req, res)) === false) {
         if ((await scheduleRoutes(req, res)) === false) {
-          res.statusCode = 404;
-          res.end(JSON.stringify({ message: "Route not found" }));
+          if ((await bookingRoutes(req, res)) === false) {
+            res.statusCode = 404;
+            res.end(JSON.stringify({ message: "Route not found" }));
+          }
         }
       }
     }
@@ -142,7 +145,10 @@ io.on("connection", (socket) => {
     console.log("multipleSeatsBooked", scheduleId, seats);
     seats.forEach((seatNumber) => {
       if (seatStates[scheduleId]?.[seatNumber]) {
-        console.log('seatStates[scheduleId][seatNumber]', seatStates[scheduleId][seatNumber]);
+        console.log(
+          "seatStates[scheduleId][seatNumber]",
+          seatStates[scheduleId][seatNumber]
+        );
         clearTimeout(seatStates[scheduleId][seatNumber].timer);
         seatStates[scheduleId][seatNumber] = { state: "Booked" };
       }

@@ -228,7 +228,7 @@ const getAllSchedules = async (req, res) => {
   }
 };
 
-const doPayment = async (req, res) => {
+const bookingSeat = async (req, res) => {
   try {
     let body = await parseBody(req);
     const { userId, scheduleId, seats, paymentMethod, amount } = body;
@@ -313,5 +313,5 @@ module.exports = {
   getSchedulesByRouteId,
   getScheduleById,
   getAllSchedules,
-  doPayment,
+  bookingSeat,
 };
