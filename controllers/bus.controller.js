@@ -48,6 +48,7 @@ const registerBus = async (req, res) => {
       email: busOwnerEmail,
       role: ROLES.OPERATOR,
       password: hashedPassword,
+      contactNumber: busOwnerContact,
     });
 
     const user = await newUser.save();

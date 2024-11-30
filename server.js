@@ -14,9 +14,15 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB();
 
+const allowedOrigins = ["http://localhost:3000", "http://localhost:3001"];
+
 const server = http.createServer(async (req, res) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Content-Type", "application/json");
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
   res.setHeader("Access-Control-Allow-Headers", "*");
   if (req.method === "OPTIONS") {
     res.setHeader(
@@ -41,7 +47,7 @@ const server = http.createServer(async (req, res) => {
 
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://localhost:3001"],
     methods: ["GET", "POST"],
   },
 });
@@ -49,46 +55,106 @@ const io = socketIo(server, {
 // In-memory storage for seat states
 let seatStates = {}; // { scheduleId: { seatNumber: { state: "Available" | "Processing" | "Booked", timer: TimeoutId } } }
 
+// io.on("connection", (socket) => {
+//   console.log("New client connected");
+
+//   // Handle seat processing
+//   socket.on("seatProcessing", ({ scheduleId, seatNumber, userId }) => {
+//     if (!seatStates[scheduleId]) seatStates[scheduleId] = {};
+
+//     const seat = seatStates[scheduleId][seatNumber];
+//     if (seat?.state === "Booked") {
+//       return socket.emit("seatUnavailable", { seatNumber });
+//     }
+
+//     // Update seat state to Processing
+//     seatStates[scheduleId][seatNumber] = {
+//       state: "Processing",
+//       timer: setTimeout(() => {
+//         // Reset seat to Available after 10 minutes
+//         seatStates[scheduleId][seatNumber] = { state: "Available" };
+//         io.emit("seatReset", { scheduleId, seatNumber });
+//       }, 10 * 60 * 1000), // 10 minutes
+//     };
+
+//     io.emit("seatStatusUpdate", {
+//       scheduleId,
+//       seatNumber,
+//       state: "Processing",
+//     });
+//   });
+
+//   // Handle payment completion
+//   socket.on("seatBooked", ({ scheduleId, seatNumber }) => {
+//     if (seatStates[scheduleId]?.[seatNumber]) {
+//       clearTimeout(seatStates[scheduleId][seatNumber].timer); // Cancel the timeout
+//       seatStates[scheduleId][seatNumber] = { state: "Booked" };
+//       io.emit("seatStatusUpdate", {
+//         scheduleId,
+//         seatNumber,
+//         state: "Booked",
+//       });
+//     }
+//   });
+
+//   socket.on("disconnect", () => {
+//     console.log("Client disconnected");
+//   });
+// });
+
 io.on("connection", (socket) => {
   console.log("New client connected");
 
-  // Handle seat processing
-  socket.on("seatProcessing", ({ scheduleId, seatNumber, userId }) => {
+  // Handle multiple seat processing
+  socket.on("multipleSeatsProcessing", ({ scheduleId, seats, userId }) => {
+    console.log("multipleSeatsProcessing", scheduleId, seats);
     if (!seatStates[scheduleId]) seatStates[scheduleId] = {};
 
-    const seat = seatStates[scheduleId][seatNumber];
-    if (seat?.state === "Booked") {
-      return socket.emit("seatUnavailable", { seatNumber });
+    const unavailableSeats = seats.filter(
+      (seatNumber) => seatStates[scheduleId][seatNumber]?.state === "Booked"
+    );
+
+    if (unavailableSeats.length > 0) {
+      return socket.emit("seatsUnavailable", { unavailableSeats });
     }
 
-    // Update seat state to Processing
-    seatStates[scheduleId][seatNumber] = {
-      state: "Processing",
-      timer: setTimeout(() => {
-        // Reset seat to Available after 10 minutes
-        seatStates[scheduleId][seatNumber] = { state: "Available" };
-        io.emit("seatReset", { scheduleId, seatNumber });
-      }, 10 * 60 * 1000), // 10 minutes
-    };
+    seats.forEach((seatNumber) => {
+      seatStates[scheduleId][seatNumber] = {
+        state: "Processing",
+        timer: setTimeout(() => {
+          seatStates[scheduleId][seatNumber] = { state: "Available" };
+          io.emit("seatReset", { scheduleId, seatNumber });
+        }, 10 * 60 * 1000), // Reset after 10 minutes
+      };
+    });
 
     io.emit("seatStatusUpdate", {
       scheduleId,
-      seatNumber,
-      state: "Processing",
+      seats: seats.map((seatNumber) => ({
+        seatNumber: seatNumber.seatNumber,
+        state: "Processing",
+      })),
     });
   });
 
-  // Handle payment completion
-  socket.on("seatBooked", ({ scheduleId, seatNumber }) => {
-    if (seatStates[scheduleId]?.[seatNumber]) {
-      clearTimeout(seatStates[scheduleId][seatNumber].timer); // Cancel the timeout
-      seatStates[scheduleId][seatNumber] = { state: "Booked" };
-      io.emit("seatStatusUpdate", {
-        scheduleId,
-        seatNumber,
+  // Handle booking multiple seats
+  socket.on("multipleSeatsBooked", ({ scheduleId, seats }) => {
+    console.log("multipleSeatsBooked", scheduleId, seats);
+    seats.forEach((seatNumber) => {
+      if (seatStates[scheduleId]?.[seatNumber]) {
+        console.log('seatStates[scheduleId][seatNumber]', seatStates[scheduleId][seatNumber]);
+        clearTimeout(seatStates[scheduleId][seatNumber].timer);
+        seatStates[scheduleId][seatNumber] = { state: "Booked" };
+      }
+    });
+
+    io.emit("seatStatusUpdate", {
+      scheduleId,
+      seats: seats.map((seatNumber) => ({
+        seatNumber: seatNumber.seatNumber,
         state: "Booked",
-      });
-    }
+      })),
+    });
   });
 
   socket.on("disconnect", () => {

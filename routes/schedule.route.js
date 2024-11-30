@@ -8,10 +8,9 @@ const {
   getSchedulesByRouteId,
   getScheduleById,
   getAllSchedules,
-  bookSeat,
+  doPayment,
 } = require("../controllers/schedule.controller");
 const { errorHandler } = require("../error/error");
-const io = require("../server");
 
 const scheduleRoutes = async (req, res) => {
   const parsedUrl = parse(req.url);
@@ -61,10 +60,11 @@ const scheduleRoutes = async (req, res) => {
       req.scheduleId = scheduleId;
       await getScheduleById(req, res);
     } catch (error) {}
-  } else if (path === "/api/v1/schedules/bookseat" && req.method === "POST") {
+  } else if (path === "/api/v1/schedules/pay" && req.method === "POST") {
     try {
-      await verifyToken(req, res, io);
-      await bookSeat(req, res);
+      console.log("PAYMENT");
+      await verifyToken(req, res);
+      await doPayment(req, res);
     } catch (error) {}
   } else {
     return false;
