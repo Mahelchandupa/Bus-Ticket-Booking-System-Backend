@@ -28,8 +28,10 @@ jobs:
     - run: npm run build --if-present
     - run: |
         touch .env
-        echo "${{ secrets.MONGOOSE }}" >> .env
-        echo "${{ secrets.JWT_SECRET }}" >> .env
-        echo "${{ secrets.EMAIL_ADDRESS }}" >> .env
-        echo "${{ secrets.EMAIL_PASSWORD }}" >> .env
-        echo "${{ secrets.PORT }}" >> .env
+        echo "MONGOOSE=${{ secrets.MONGOOSE }}" >> .env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+        echo "EMAIL_ADDRESS=${{ secrets.EMAIL_ADDRESS }}" >> .env
+        echo "EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}" >> .env
+        echo "PORT=${{ secrets.PORT }}" >> .env
+        echo "Environment file generated successfully."
+        grep -v -e "MONGOOSE=" -e "JWT_SECRET=" -e "EMAIL_PASSWORD=" .env # Debug safe variables
