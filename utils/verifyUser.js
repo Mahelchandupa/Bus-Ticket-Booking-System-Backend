@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { errorHandler } = require("../error/error");
 const errorMessages = require("../error/errorMesssages");
 
-const verifyToken = (req, res, role) => {
+const verifyToken = (req, res, roles) => {
   return new Promise((resolve, reject) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
@@ -36,7 +36,7 @@ const verifyToken = (req, res, role) => {
       }
 
       // Role-based authorization
-      if (role && user.role !== role) {
+      if (roles && !roles.includes(user.role)) {
         res.statusCode = errorMessages.FORBIDDEN.statusCode;
         res.end(
           errorHandler(

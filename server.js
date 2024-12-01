@@ -58,53 +58,6 @@ const io = socketIo(server, {
 // In-memory storage for seat states
 let seatStates = {}; // { scheduleId: { seatNumber: { state: "Available" | "Processing" | "Booked", timer: TimeoutId } } }
 
-// io.on("connection", (socket) => {
-//   console.log("New client connected");
-
-//   // Handle seat processing
-//   socket.on("seatProcessing", ({ scheduleId, seatNumber, userId }) => {
-//     if (!seatStates[scheduleId]) seatStates[scheduleId] = {};
-
-//     const seat = seatStates[scheduleId][seatNumber];
-//     if (seat?.state === "Booked") {
-//       return socket.emit("seatUnavailable", { seatNumber });
-//     }
-
-//     // Update seat state to Processing
-//     seatStates[scheduleId][seatNumber] = {
-//       state: "Processing",
-//       timer: setTimeout(() => {
-//         // Reset seat to Available after 10 minutes
-//         seatStates[scheduleId][seatNumber] = { state: "Available" };
-//         io.emit("seatReset", { scheduleId, seatNumber });
-//       }, 10 * 60 * 1000), // 10 minutes
-//     };
-
-//     io.emit("seatStatusUpdate", {
-//       scheduleId,
-//       seatNumber,
-//       state: "Processing",
-//     });
-//   });
-
-//   // Handle payment completion
-//   socket.on("seatBooked", ({ scheduleId, seatNumber }) => {
-//     if (seatStates[scheduleId]?.[seatNumber]) {
-//       clearTimeout(seatStates[scheduleId][seatNumber].timer); // Cancel the timeout
-//       seatStates[scheduleId][seatNumber] = { state: "Booked" };
-//       io.emit("seatStatusUpdate", {
-//         scheduleId,
-//         seatNumber,
-//         state: "Booked",
-//       });
-//     }
-//   });
-
-//   socket.on("disconnect", () => {
-//     console.log("Client disconnected");
-//   });
-// });
-
 io.on("connection", (socket) => {
   console.log("New client connected");
 

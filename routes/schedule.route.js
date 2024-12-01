@@ -28,7 +28,7 @@ const scheduleRoutes = async (req, res) => {
 
   if (path === "/api/v1/schedules" && req.method === "POST") {
     try {
-      await verifyToken(req, res, ROLES.ADMIN);
+      await verifyToken(req, res, [ROLES.ADMIN]);
       await createBusRouteSchedule(req, res);
     } catch (error) {}
   } else if (path === "/api/v1/schedules" && req.method === "GET") {

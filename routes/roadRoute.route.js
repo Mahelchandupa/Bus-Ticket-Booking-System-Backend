@@ -26,7 +26,7 @@ const roadRoutes = async (req, res) => {
 
   if (path === "/api/v1/routes" && req.method === "POST") {
     try {
-      await verifyToken(req, res, ROLES.ADMIN); // Await for token verification
+      await verifyToken(req, res, [ROLES.ADMIN]); // Await for token verification
       await createBusRoute(req, res);
     } catch (error) {}
   } else if (path === "/api/v1/routes" && req.method === "GET") {
