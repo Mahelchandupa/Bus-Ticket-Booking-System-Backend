@@ -1,4 +1,4 @@
-const { transporter } = require("../transporter");
+const transporter = require("../transporter");
 
 const sendLoginDetails = async (busOwnerEmail, username, temporaryPassword) => {
   try {

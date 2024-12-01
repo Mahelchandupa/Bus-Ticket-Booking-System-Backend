@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const PaymentSchema = new Schema({
+const BookingSchema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -40,7 +40,19 @@ const PaymentSchema = new Schema({
     type: Map,
     of: String,
   },
+  bookingSeats: {
+    type: [String],
+    required: true,
+  },
+  cancelSeats: [
+    {
+      seatNumber: { type: String },
+      cancelDate: { type: Date, default: Date.now },
+      reason: { type: String },
+      userId: { type: Schema.Types.ObjectId, ref: "User" },
+    },
+  ],
 });
 
-const Payment = mongoose.model("Payment", PaymentSchema);
-module.exports = Payment;
+const Booking = mongoose.model("Booking", BookingSchema);
+module.exports = Booking;

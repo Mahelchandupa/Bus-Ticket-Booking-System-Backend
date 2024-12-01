@@ -26,7 +26,7 @@ const busRoutes = async (req, res) => {
 
   if (path === "/api/v1/buses" && req.method === "POST") {
     try {
-      await verifyToken(req, res, ROLES.ADMIN);
+      await verifyToken(req, res, [ROLES.ADMIN]);
       await registerBus(req, res);
     } catch (error) {}
   } else if (path === "/api/v1/buses" && req.method === "GET") {

@@ -23,12 +23,6 @@ const userSchema = new mongoose.Schema({
         default: "user",
         enum: ["user", "admin", "operator"],
     },
-    bookings: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Schedule",
-        }
-    ],
     contactNumber: {
         type: String,
         required: true,
