@@ -4,7 +4,7 @@ mongoose.set("strictQuery", false);
 
 dotenv.config();
 
-const uri = process.env.MONGOOSE;
+const uri = process.env.MONGO_DB_URI;
 
 async function connectDB() {
   await mongoose.connect(uri)
