@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB();
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "https://bus-ticket-booking-system-frontend-7vtx667sv-mahels-projects.vercel.app"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "https://bus-ticket-booking-system-frontend.vercel.app"];
 
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
@@ -50,7 +50,7 @@ const server = http.createServer(async (req, res) => {
 
 const io = socketIo(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:3001"],
+    origin: ["http://localhost:3000", "http://localhost:3001", "https://bus-ticket-booking-system-frontend.vercel.app"],
     methods: ["GET", "POST"],
   },
 });
