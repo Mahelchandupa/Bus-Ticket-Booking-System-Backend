@@ -28,10 +28,5 @@ jobs:
     - run: npm run build --if-present
     - run: |
         touch .env
-        echo "${{ secrets.MONGOOSE }}" > .env
-        echo "${{ secrets.JWT_SECRET }}" > .env
-        echo "${{ secrets.EMAIL_ADDRESS }}" > .env
-        echo "${{ secrets.EMAIL_PASSWORD }}" > .env
-        echo "${{ secrets.PORT }}" > .env
-        echo "Environment file generated successfully."
+        echo "${{ secrets.PROD_ENV_FILE }}" > .env
         
